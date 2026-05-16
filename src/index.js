@@ -15,6 +15,7 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'https://regalo-verus.vercel.app',
   'https://regalo.arcitia.com',
+  'https://vera.arcitia.com',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
