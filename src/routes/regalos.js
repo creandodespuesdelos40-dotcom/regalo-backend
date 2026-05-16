@@ -12,30 +12,19 @@ function generateToken() {
   return token;
 }
 
-// POST /api/regalos — create (requires Supabase JWT in Authorization header)
+// POST /api/regalos — create (public, no auth required)
 router.post('/', async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No autorizado' });
-  }
+  const { musica_url, musica_titulo, mensagem, remetente_nome } = req.body;
 
-  const jwt = authHeader.split(' ')[1];
-  const { data: { user }, error: authError } = await supabase.auth.getUser(jwt);
-  if (authError || !user) {
-    return res.status(401).json({ error: 'Sesión inválida' });
-  }
-
-  const { musica_url, musica_titulo, mensagem } = req.body;
-  if (!musica_url || !musica_titulo || !mensagem) {
+  if (!musica_url || !musica_titulo || !mensagem || !remetente_nome) {
     return res.status(400).json({ error: 'Faltan campos requeridos' });
   }
   if (mensagem.length > 300) {
     return res.status(400).json({ error: 'Mensaje excede 300 caracteres' });
   }
-
-  const remetente_nome = user.user_metadata?.name
-    || user.user_metadata?.full_name
-    || user.email.split('@')[0];
+  if (remetente_nome.length > 100) {
+    return res.status(400).json({ error: 'Nombre excede 100 caracteres' });
+  }
 
   let token;
   let attempts = 0;
@@ -54,8 +43,8 @@ router.post('/', async (req, res) => {
     .from('regalos')
     .insert({
       token,
-      remetente_user_id: user.id,
-      remetente_nome,
+      remetente_user_id: null,
+      remetente_nome: remetente_nome.trim(),
       musica_url,
       musica_titulo,
       mensagem,
