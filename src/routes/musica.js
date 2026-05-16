@@ -24,11 +24,20 @@ router.get('/', async (req, res) => {
 
     const files = response.data
       .filter(f => !f.IsDirectory && /\.(mp3|wav|ogg|m4a)$/i.test(f.ObjectName))
-      .map(f => ({
-        titulo: f.ObjectName.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
-        url: `${BUNNY_CDN_URL}/${folder}/${f.ObjectName}`,
-        tamanho: f.Length,
-      }));
+      .map(f => {
+        let name = f.ObjectName;
+        try { name = decodeURIComponent(name); } catch {}
+        const titulo = name
+          .replace(/\.[^.]+$/, '')   // remove extension
+          .replace(/^\d+[-_\s]*/, '') // strip leading numeric ID
+          .replace(/[-_]/g, ' ')      // dashes/underscores → spaces
+          .trim();
+        return {
+          titulo,
+          url: `${BUNNY_CDN_URL}/${folder}/${f.ObjectName}`,
+          tamanho: f.Length,
+        };
+      });
 
     res.json(files);
   } catch (err) {
