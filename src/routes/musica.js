@@ -19,10 +19,11 @@ router.get('/', async (req, res) => {
           AccessKey: BUNNY_API_KEY,
           Accept: 'application/json',
         },
+        responseType: 'arraybuffer',
       }
     );
 
-    const files = response.data
+    const files = JSON.parse(Buffer.from(response.data).toString('utf8'))
       .filter(f => !f.IsDirectory && /\.(mp3|wav|ogg|m4a)$/i.test(f.ObjectName))
       .map(f => {
         let name = f.ObjectName;
