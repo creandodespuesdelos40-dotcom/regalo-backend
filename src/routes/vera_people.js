@@ -1,5 +1,5 @@
 const { Router } = require('express')
-const supabase = require('../supabase')
+const supabase = require('../vera_supabase')
 
 const router = Router()
 

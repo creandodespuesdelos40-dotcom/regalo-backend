@@ -1,6 +1,6 @@
 const { Router } = require('express')
 const Anthropic = require('@anthropic-ai/sdk')
-const supabase = require('../supabase')
+const supabase = require('../vera_supabase')
 
 const router = Router()
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })

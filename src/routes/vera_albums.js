@@ -1,10 +1,5 @@
 const { Router } = require('express')
-const { createClient } = require('@supabase/supabase-js')
-
-const supabase = createClient(
-  process.env.VERA_SUPABASE_URL,
-  process.env.VERA_SUPABASE_SERVICE_ROLE_KEY
-)
+const supabase = require('../vera_supabase')
 
 const router = Router()
 
