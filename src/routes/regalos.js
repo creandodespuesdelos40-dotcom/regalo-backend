@@ -12,7 +12,38 @@ function generateToken() {
   return token;
 }
 
-// POST /api/regalos — create (public, no auth required)
+async function getUserFromHeader(req) {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith('Bearer ')) return null;
+  const { data: { user } } = await supabase.auth.getUser(auth.split(' ')[1]);
+  return user ?? null;
+}
+
+// GET /api/regalos/me/stats — requires auth
+router.get('/me/stats', async (req, res) => {
+  const user = await getUserFromHeader(req);
+  if (!user) return res.status(401).json({ error: 'No autorizado' });
+
+  const { data, error } = await supabase
+    .from('regalos')
+    .select('token, musica_titulo, mensagem, acessado, criado_at, acessado_at')
+    .eq('remetente_user_id', user.id)
+    .order('criado_at', { ascending: false })
+    .limit(20);
+
+  if (error) {
+    console.error('Error fetching stats:', error);
+    return res.status(500).json({ error: 'Error interno' });
+  }
+
+  res.json({
+    total_enviados: data.length,
+    total_abertos: data.filter(r => r.acessado).length,
+    regalos: data,
+  });
+});
+
+// POST /api/regalos — create (public; saves user ID if auth header present)
 router.post('/', async (req, res) => {
   const { musica_url, musica_titulo, mensagem, remetente_nome } = req.body;
 
@@ -25,6 +56,8 @@ router.post('/', async (req, res) => {
   if (remetente_nome.length > 100) {
     return res.status(400).json({ error: 'Nombre excede 100 caracteres' });
   }
+
+  const user = await getUserFromHeader(req);
 
   let token;
   let attempts = 0;
@@ -43,7 +76,7 @@ router.post('/', async (req, res) => {
     .from('regalos')
     .insert({
       token,
-      remetente_user_id: null,
+      remetente_user_id: user?.id ?? null,
       remetente_nome: remetente_nome.trim(),
       musica_url,
       musica_titulo,
@@ -74,7 +107,6 @@ router.get('/:token', async (req, res) => {
     return res.status(404).json({ error: 'Regalo no encontrado' });
   }
 
-  // Mark as accessed if first time
   await supabase
     .from('regalos')
     .update({ acessado: true, acessado_at: new Date().toISOString() })

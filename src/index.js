@@ -8,6 +8,7 @@ const veraCapturesRouter = require('./routes/vera_captures');
 const veraPeopleRouter = require('./routes/vera_people');
 const veraInsightsRouter = require('./routes/vera_insights');
 const veraAlbumsRouter = require('./routes/vera_albums');
+const veraGroupsRouter = require('./routes/vera_groups');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,6 +36,7 @@ app.use('/api/vera/captures', veraCapturesRouter);
 app.use('/api/vera/people', veraPeopleRouter);
 app.use('/api/vera/insights', veraInsightsRouter);
 app.use('/api/vera', veraAlbumsRouter);
+app.use('/api/vera', veraGroupsRouter);
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 

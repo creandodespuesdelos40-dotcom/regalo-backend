@@ -105,6 +105,25 @@ router.post('/memories', async (req, res) => {
   res.status(201).json(data)
 })
 
+// PATCH /api/vera/albums/:album_id/group
+router.patch('/albums/:album_id/group', async (req, res) => {
+  const { album_id } = req.params
+  const { group_id } = req.body
+
+  const { data, error } = await supabase
+    .from('vera_albums')
+    .update({ group_id: group_id || null })
+    .eq('id', album_id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('setAlbumGroup:', error)
+    return res.status(500).json({ error: error.message })
+  }
+  res.json(data)
+})
+
 // GET /api/vera/shared/:share_token  — público, sin auth
 router.get('/shared/:share_token', async (req, res) => {
   const { share_token } = req.params
